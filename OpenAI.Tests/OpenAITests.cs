@@ -18,7 +18,9 @@ namespace OpenAI.Tests
         {
             openAiService = new OpenAIService(new OpenAiOptions()
             {
-                ApiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY")
+                ApiKey = 
+                    Environment.GetEnvironmentVariable("MY_OPEN_AI_API_KEY") ?? 
+                    Environment.GetEnvironmentVariable("OPENAI_API_KEY")
             });
         }
 
