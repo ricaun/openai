@@ -4,6 +4,7 @@ using OpenAI.GPT3.Managers;
 using OpenAI.GPT3.ObjectModels;
 using OpenAI.GPT3.ObjectModels.RequestModels;
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -71,13 +72,17 @@ namespace OpenAI.Tests
         [Test]
         public async Task OpenIA_CreateCompletionAsStream()
         {
+            var resultCount = 0;
+            var resultTime = "";
+            var resultStopWatch = new Stopwatch();
+            resultStopWatch.Start();
+
             var completionResult = openAiService.Completions.CreateCompletionAsStream(new CompletionCreateRequest()
             {
                 Prompt = "Once upon a time",
                 MaxTokens = 50
             }, Models.Davinci);
 
-            var resultCount = 0;
             await foreach (var completion in completionResult)
             {
                 if (completion.Successful)
@@ -94,10 +99,15 @@ namespace OpenAI.Tests
                     Console.WriteLine($"{completion.Error.Code}: {completion.Error.Message}");
                 }
                 Assert.IsTrue(completion.Successful);
+                Assert.That(resultStopWatch.ElapsedTicks, Is.GreaterThan(0));
                 resultCount++;
+                resultTime += $"{resultStopWatch.ElapsedTicks} ";
+                resultStopWatch.Restart();
             }
+
             Console.WriteLine();
             Console.WriteLine($"Result Count: {resultCount}");
+            Console.WriteLine($"Result Times: {resultTime}");
             Assert.That(resultCount, Is.GreaterThan(1));
         }
     }

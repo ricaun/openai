@@ -22,7 +22,23 @@ namespace OpenAI.GPT3.Extensions
             return await response.Content.ReadFromJsonAsync<TResponse>() ?? throw new InvalidOperationException();
         }
 
-        public static HttpResponseMessage PostAsStreamAsync(this HttpClient client, string uri, object requestModel)
+        public static async Task<HttpResponseMessage> PostAsStreamAsync(this HttpClient client, string uri, object requestModel)
+        {
+            var settings = new JsonSerializerOptions()
+            {
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault
+            };
+
+            var content = JsonContent.Create(requestModel, null, settings);
+
+            using var request = new HttpRequestMessage(HttpMethod.Post, uri);
+            request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("text/event-stream"));
+            request.Content = content;
+
+            return await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+        }
+
+        public static HttpResponseMessage PostAsStream(this HttpClient client, string uri, object requestModel)
         {
             var settings = new JsonSerializerOptions()
             {
